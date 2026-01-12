@@ -8,7 +8,7 @@
 import UIKit
 
 class DLTSideMenuCell: UITableViewCell {
-    var idEditMode: Bool = false
+    var dragAction: ((UILongPressGestureRecognizer) -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -21,6 +21,7 @@ class DLTSideMenuCell: UITableViewCell {
     }
     
     func addSubUI() {
+        self.contentView.backgroundColor = DLTThemeManager.shareManager.bgColor
         self.contentView.addSubview(self.nameTF)
         self.contentView.addSubview(self.dragImgView)
         self.contentView.addSubview(self.bottomLine)
@@ -47,9 +48,15 @@ class DLTSideMenuCell: UITableViewCell {
         nameTF.text = columnName
         if editState {
             nameTF.layer.borderWidth = 1
+            nameTF.backgroundColor = DLTThemeManager.shareManager.DLT_F7F8FA_20242C
         }else{
             nameTF.layer.borderWidth = 0
+            nameTF.backgroundColor = DLTThemeManager.shareManager.bgColor
         }
+    }
+    
+    @objc func longPressToDrag(sender: UILongPressGestureRecognizer) {
+        dragAction?(sender)
     }
     
     // MARK: -getter
@@ -69,6 +76,9 @@ class DLTSideMenuCell: UITableViewCell {
     private lazy var dragImgView: UIImageView = {
         let imgView = UIImageView(image: UIImage(named: "dlt_icon_drag"))
         imgView.isHidden = true
+        imgView.isUserInteractionEnabled = true
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(longPressToDrag(sender:)))
+        imgView.addGestureRecognizer(longPress)
         return imgView
     }()
     
