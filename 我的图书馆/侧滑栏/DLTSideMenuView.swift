@@ -7,9 +7,9 @@
 
 import UIKit
 
-class DLTSideMenuView: UIView, UITableViewDelegate, UITableViewDataSource {
-    var editState: Bool = false
-    var dataArray: NSMutableArray = ["栏目1","栏目2","栏目3","栏目4"]
+class DLTSideMenuView: UIView {
+    private var editState: Bool = false
+    private var dataArray: NSMutableArray = ["栏目1","栏目2","栏目3","栏目4"]
     //cell快照
     private var snapshot: UIView?
     //长按的cell对应的indexPath
@@ -38,33 +38,8 @@ class DLTSideMenuView: UIView, UITableViewDelegate, UITableViewDataSource {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: -UITableViewDelegate, UITableViewDataSource
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataArray.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell: DLTSideMenuCell = tableView.dequeueReusableCell(withIdentifier: String(describing: DLTSideMenuCell.self), for: indexPath) as! DLTSideMenuCell
-        let name: String = dataArray[indexPath.row] as! String
-        cell.refreshData(self.editState, name)
-        cell.dragAction = { [weak self] longPressGesture in
-            self?.dragAction(longPressGesture)
-        }
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let name: String = dataArray[indexPath.row] as! String
-        print("点击了:" + name)
-        
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 100
-    }
-    
     // MARK: -action
-    @objc func editColumn() {
+    @objc private func editColumn() {
         self.editState = !self.editState
         if self.editState {
             editButton.setTitle("完成", for: .normal)
@@ -128,7 +103,7 @@ class DLTSideMenuView: UIView, UITableViewDelegate, UITableViewDataSource {
         }
     }
     
-    func snapshotFromView(_ view: UIView) -> UIView? {
+    private func snapshotFromView(_ view: UIView) -> UIView? {
         let snapshot = view.snapshotView(afterScreenUpdates: true)
         snapshot?.layer.masksToBounds = false
         snapshot?.layer.cornerRadius = 0
@@ -160,5 +135,32 @@ class DLTSideMenuView: UIView, UITableViewDelegate, UITableViewDataSource {
         button.addTarget(self, action: #selector(editColumn), for: .touchUpInside)
         return button
     }()
+}
+
+//遵循代理可以写一个扩展，也可以创建类的时候这样写：class DLTSideMenuView: UIView, UITableViewDelegate, UITableViewDataSource{}
+extension DLTSideMenuView: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return dataArray.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell: DLTSideMenuCell = tableView.dequeueReusableCell(withIdentifier: String(describing: DLTSideMenuCell.self), for: indexPath) as! DLTSideMenuCell
+        let name: String = dataArray[indexPath.row] as! String
+        cell.refreshData(self.editState, name)
+        cell.dragAction = { [weak self] longPressGesture in
+            self?.dragAction(longPressGesture)
+        }
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let name: String = dataArray[indexPath.row] as! String
+        print("点击了:" + name)
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 100
+    }
 }
 

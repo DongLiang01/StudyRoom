@@ -20,7 +20,7 @@ class DLTSideMenuCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func addSubUI() {
+    private func addSubUI() {
         self.contentView.backgroundColor = DLTThemeManager.shareManager.bgColor
         self.contentView.addSubview(self.nameTF)
         self.contentView.addSubview(self.dragImgView)
@@ -55,7 +55,7 @@ class DLTSideMenuCell: UITableViewCell {
         }
     }
     
-    @objc func longPressToDrag(sender: UILongPressGestureRecognizer) {
+    @objc private func longPressToDrag(sender: UILongPressGestureRecognizer) {
         dragAction?(sender)
     }
     

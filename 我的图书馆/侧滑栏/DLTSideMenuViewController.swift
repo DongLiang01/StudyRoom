@@ -27,7 +27,7 @@ class DLTSideMenuViewController: DLTBaseViewController {
         }
     }
     
-    @objc func closeMenu() {
+    @objc private func closeMenu() {
         self.view.endEditing(false)
         UIView.animate(withDuration: 0.25) {
             self.view.frame.origin.x = -self.view.bounds.size.width
@@ -36,13 +36,13 @@ class DLTSideMenuViewController: DLTBaseViewController {
         }
     }
     
-    lazy var menuView: DLTSideMenuView = {
+    private lazy var menuView: DLTSideMenuView = {
         let view = DLTSideMenuView()
         view.frame = CGRect(x: -menuWidth, y: 0, width: menuWidth, height: kScreenHeight)
         return view
     }()
     
-    lazy var dimView: UIView = {
+    private lazy var dimView: UIView = {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: kScreenHeight))
         view.backgroundColor = UIColor.hex("#000000")?.withAlphaComponent(0.4)
         view.alpha = 0
