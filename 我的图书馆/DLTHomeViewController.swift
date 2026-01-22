@@ -57,11 +57,14 @@ class DLTHomeViewController: DLTBaseViewController {
         return button
     }()
 
-    lazy var catrgoryView: DLTCategoryView = {
-        let view = DLTCategoryView()
+    lazy var catrgoryView: DLTCategoryTitleView = {
+        let view = DLTCategoryTitleView()
         
         view.titles = ["武侠","人物","历史记录","悬幻","武侠","人物","历史记录","悬幻","武侠","人物","历史记录","悬幻"]
         view.defaultSelectedIndex = 18
+        view.onSelect = { index in
+            print("点击了第 \(index) 个")
+        }
         return view
     }()
 }

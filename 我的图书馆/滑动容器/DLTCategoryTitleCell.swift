@@ -7,7 +7,7 @@
 
 import UIKit
 
-class DLTCategoryCell: UICollectionViewCell {
+class DLTCategoryTitleCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         addUI()

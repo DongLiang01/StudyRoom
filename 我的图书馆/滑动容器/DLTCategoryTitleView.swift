@@ -7,11 +7,12 @@
 
 import UIKit
 
-class DLTCategoryView: UIView {
+class DLTCategoryTitleView: UIView {
     var titleFont = UIFont(name: FontPingFangRe, size: 16)
     var selectedTitleFont = UIFont(name: FontPingFangMe, size: 18)
     var titleColor = DLTThemeManager.shareManager.DLT_888C95_888C95
     var selectedTitleColor = DLTThemeManager.shareManager.DLT_333333_FFFFFF
+    var  onSelect: ((Int)->Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -89,19 +90,19 @@ class DLTCategoryView: UIView {
         cv.showsHorizontalScrollIndicator = false
         cv.delegate = self
         cv.dataSource = self
-        cv.register(DLTCategoryCell.self, forCellWithReuseIdentifier: String(describing: DLTCategoryCell.self))
+        cv.register(DLTCategoryTitleCell.self, forCellWithReuseIdentifier: String(describing: DLTCategoryTitleCell.self))
         return cv
     }()
 }
 
-extension DLTCategoryView: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+extension DLTCategoryTitleView: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     // MARK: -UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return titles.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: DLTCategoryCell.self), for: indexPath) as! DLTCategoryCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: DLTCategoryTitleCell.self), for: indexPath) as! DLTCategoryTitleCell
         if selectedIndex == indexPath.item {
             cell.reload(title: titles[indexPath.item], font: selectedTitleFont ?? .systemFont(ofSize: 18), color: selectedTitleColor)
         }else{
@@ -113,6 +114,7 @@ extension DLTCategoryView: UICollectionViewDelegate, UICollectionViewDataSource,
     // MARK: -UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         selectedIndex = indexPath.item
+        onSelect?(indexPath.item)
     }
     
     // MARK: -UICollectionViewDelegateFlowLayout
