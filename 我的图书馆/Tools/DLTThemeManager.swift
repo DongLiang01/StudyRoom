@@ -17,6 +17,7 @@ final class DLTThemeManager {
     private(set) var bgColor: UIColor?
     private(set) var DLT_333333_FFFFFF: UIColor?
     private(set) var DLT_F7F8FA_20242C: UIColor?
+    private(set) var DLT_888C95_888C95: UIColor?
     
     private init() {
         let themeTypeNum = UserDefaults.standard.integer(for: .DLTThemeTypeKey)
@@ -30,10 +31,12 @@ final class DLTThemeManager {
             bgColor = UIColor.hex("#FFFFFF")
             DLT_333333_FFFFFF = UIColor.hex("#333333")
             DLT_F7F8FA_20242C = UIColor.hex("#F7F8FA")
+            DLT_888C95_888C95 = UIColor.hex("#888C95")
         case .night:
             bgColor = UIColor.hex("#181B21")
             DLT_333333_FFFFFF = UIColor.hex("#FFFFFF")
             DLT_F7F8FA_20242C = UIColor.hex("#20242C")
+            DLT_888C95_888C95 = UIColor.hex("#888C95")
         }
     }
 }
