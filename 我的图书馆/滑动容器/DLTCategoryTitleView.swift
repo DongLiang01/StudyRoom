@@ -8,12 +8,42 @@
 import UIKit
 
 class DLTCategoryTitleView: UIView {
+    // MARK: -Public Properties
     var titleFont = UIFont(name: FontPingFangRe, size: 16)
     var selectedTitleFont = UIFont(name: FontPingFangMe, size: 18)
     var titleColor = DLTThemeManager.shareManager.DLT_888C95_888C95
     var selectedTitleColor = DLTThemeManager.shareManager.DLT_333333_FFFFFF
+    var containerView: DLTCategoryContainerView? {
+        didSet {
+            containerView?.containerDelegate = self
+            containerView?.scrollTo(index: selectedIndex, animated: true)
+        }
+    }
+    //点击后给外部响应
     var  onSelect: ((Int)->Void)?
+    //默认选中
+    var defaultSelectedIndex: Int = 0 {
+        didSet {
+            if titles.isEmpty {
+                //没有修正selectedIndex的意义，因为后续设置titles的时候，也会修正
+                selectedIndex = defaultSelectedIndex
+            }else{
+                selectedIndex = adjustSelectedIndexIfNeeded(defaultSelectedIndex)
+            }
+            containerView?.scrollTo(index: selectedIndex, animated: true)
+        }
+    }
+    //默认标题
+    var titles: [String] = [] {
+        didSet {
+            collectionView.reloadData()
+            selectedIndex = adjustSelectedIndexIfNeeded(selectedIndex)
+            containerView?.scrollTo(index: selectedIndex, animated: true)
+            setNeedsLayout()
+        }
+    }
     
+    // MARK: -override
     override init(frame: CGRect) {
         super.init(frame: frame)
         addUI()
@@ -29,30 +59,22 @@ class DLTCategoryTitleView: UIView {
         collectionView.scrollToItem(at: IndexPath(item: selectedIndex, section: 0), at: .centeredHorizontally, animated: true)
     }
     
-    private func addUI() -> () {
-        addSubview(self.collectionView)
-        collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-    }
     
-    //修正SelectedIndex
-    private func adjustSelectedIndexIfNeeded(_ index: Int) -> Int {
-        guard !titles.isEmpty else {return 0}
-        return max(0, min(index, titles.count - 1))
-    }
-    
-    // MARK: -setter
-    var defaultSelectedIndex: Int = 0 {
-        didSet {
-            if titles.isEmpty {
-                //没有修正selectedIndex的意义，因为后续设置titles的时候，也会修正
-                selectedIndex = defaultSelectedIndex
-            }else{
-                selectedIndex = adjustSelectedIndexIfNeeded(defaultSelectedIndex)
-            }
-        }
-    }
+    // MARK: -Private Properties
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 20
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = DLTThemeManager.shareManager.bgColor
+        cv.showsHorizontalScrollIndicator = false
+        cv.delegate = self
+        cv.dataSource = self
+        cv.register(DLTCategoryTitleCell.self, forCellWithReuseIdentifier: String(describing: DLTCategoryTitleCell.self))
+        return cv
+    }()
     
     private var selectedIndex = 0 {
         didSet {
@@ -69,30 +91,19 @@ class DLTCategoryTitleView: UIView {
         }
     }
     
-    var titles: [String] = [] {
-        didSet {
-            collectionView.reloadData()
-            selectedIndex = adjustSelectedIndexIfNeeded(selectedIndex)
-            setNeedsLayout()
+    // MARK: -Private Methods
+    private func addUI() -> () {
+        addSubview(self.collectionView)
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
     
-    // MARK: -懒加载
-    private lazy var collectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 20
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = DLTThemeManager.shareManager.bgColor
-        cv.backgroundColor = UIColor.randomColor()
-        cv.showsHorizontalScrollIndicator = false
-        cv.delegate = self
-        cv.dataSource = self
-        cv.register(DLTCategoryTitleCell.self, forCellWithReuseIdentifier: String(describing: DLTCategoryTitleCell.self))
-        return cv
-    }()
+    //修正SelectedIndex
+    private func adjustSelectedIndexIfNeeded(_ index: Int) -> Int {
+        guard !titles.isEmpty else {return 0}
+        return max(0, min(index, titles.count - 1))
+    }
 }
 
 extension DLTCategoryTitleView: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -114,6 +125,7 @@ extension DLTCategoryTitleView: UICollectionViewDelegate, UICollectionViewDataSo
     // MARK: -UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         selectedIndex = indexPath.item
+        containerView?.scrollTo(index: selectedIndex, animated: true)
         onSelect?(indexPath.item)
     }
     
@@ -123,5 +135,15 @@ extension DLTCategoryTitleView: UICollectionViewDelegate, UICollectionViewDataSo
         let font = selectedIndex == indexPath.item ? (selectedTitleFont ?? .systemFont(ofSize: 18)) : (titleFont ?? .systemFont(ofSize: 16))
         let width = title.size(withAttributes: [.font: font]).width
         return CGSize(width: width + 12, height: bounds.height)
+    }
+}
+
+extension DLTCategoryTitleView: DLTCategoryContainerViewDelegate {
+    func containerViewDidScroll(_ containerView: DLTCategoryContainerView, percent: CGFloat) {
+        
+    }
+    
+    func containerViewDidChangeIndex(_ containerView: DLTCategoryContainerView, index: Int) {
+        selectedIndex = index
     }
 }

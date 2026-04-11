@@ -8,6 +8,14 @@
 import UIKit
 
 class DLTCategoryTitleCell: UICollectionViewCell {
+    // MARK: -Public Methods
+    func reload(title: String, font: UIFont, color: UIColor?) {
+        titleLabel.text = title
+        titleLabel.font = font
+        titleLabel.textColor = color
+    }
+    
+    // MARK: -override
     override init(frame: CGRect) {
         super.init(frame: frame)
         addUI()
@@ -17,12 +25,7 @@ class DLTCategoryTitleCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func reload(title: String, font: UIFont, color: UIColor?) {
-        titleLabel.text = title
-        titleLabel.font = font
-        titleLabel.textColor = color
-    }
-    
+    // MARK: -Private Methods
     private func addUI() {
         contentView.addSubview(self.titleLabel)
         titleLabel.snp.makeConstraints { make in
@@ -30,6 +33,7 @@ class DLTCategoryTitleCell: UICollectionViewCell {
         }
     }
     
+    // MARK: -Private Properties
     private lazy var titleLabel = {
         let label = UILabel()
         label.textColor = DLTThemeManager.shareManager.DLT_888C95_888C95

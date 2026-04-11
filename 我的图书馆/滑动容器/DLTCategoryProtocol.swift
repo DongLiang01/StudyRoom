@@ -17,6 +17,10 @@ protocol DLTCategoryListContentDelegate: NSObjectProtocol {
 }
 
 extension DLTCategoryListContentDelegate {
+    func listScrollView() -> UIScrollView? {
+        return nil
+    }
+    
     func listViewWillAppear() {
         //do some thing
     }
@@ -34,7 +38,12 @@ extension DLTCategoryListContentDelegate {
     }
 }
 
-protocol DLTCategoryListContainerDelegate: NSObjectProtocol {
+protocol DLTCategoryContainerDelegate: NSObjectProtocol {
     func numberOfListsInlistContainerView() -> Int
     func listContainerViewInitListForIndex(index: Int) -> any DLTCategoryListContentDelegate
+}
+
+protocol DLTCategoryContainerViewDelegate: AnyObject {
+    func containerViewDidScroll(_ containerView: DLTCategoryContainerView, percent: CGFloat)
+    func containerViewDidChangeIndex(_ containerView: DLTCategoryContainerView, index: Int)
 }

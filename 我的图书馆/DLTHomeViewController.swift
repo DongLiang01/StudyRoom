@@ -10,6 +10,15 @@ import UIKit
 class DLTHomeViewController: DLTBaseViewController {
 
     let menuVC = DLTSideMenuViewController()
+    let titles = ["武侠","人物","历史记录","悬幻","武侠","人物","历史记录","悬幻","武侠","人物","历史记录","悬幻"]
+    var views: [TestListView] {
+        get {
+            return titles.indices.map { index in
+                TestListView(index: index)
+            }
+        }
+    }
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,6 +30,7 @@ class DLTHomeViewController: DLTBaseViewController {
     func addUI() {
         view.addSubview(self.columnBtn)
         view.addSubview(self.catrgoryView)
+        view.addSubview(self.containerView)
         //self.view.safeAreaLayoutGuide.snp.top 就是留海的下方区域
         columnBtn.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
@@ -29,9 +39,14 @@ class DLTHomeViewController: DLTBaseViewController {
             make.height.equalTo(44)
         }
         catrgoryView.snp.makeConstraints { make in
-            make.top.equalTo(columnBtn.snp.bottom).offset(40)
+            make.top.equalTo(columnBtn.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(50)
+        }
+        containerView.snp.makeConstraints { make in
+            make.top.equalTo(catrgoryView.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
     }
     
@@ -60,12 +75,72 @@ class DLTHomeViewController: DLTBaseViewController {
     lazy var catrgoryView: DLTCategoryTitleView = {
         let view = DLTCategoryTitleView()
         
-        view.titles = ["武侠","人物","历史记录","悬幻","武侠","人物","历史记录","悬幻","武侠","人物","历史记录","悬幻"]
-        view.defaultSelectedIndex = 18
+        view.titles = titles
+        view.defaultSelectedIndex = 3
         view.onSelect = { index in
             print("点击了第 \(index) 个")
         }
+        view.containerView = self.containerView
         return view
     }()
+    
+    lazy var containerView: DLTCategoryContainerView = {
+        let view = DLTCategoryContainerView()
+        view.delegate = self
+        return view
+    }()
+    
+}
+
+extension DLTHomeViewController: DLTCategoryContainerDelegate {
+    func numberOfListsInlistContainerView() -> Int {
+        return titles.count
+    }
+    
+    func listContainerViewInitListForIndex(index: Int) -> any DLTCategoryListContentDelegate {
+        print("开始创建第\(index+1)页")
+        return TestListView(index: index)
+    }
+}
+
+class TestListView: NSObject, DLTCategoryListContentDelegate {
+
+    private let view = UIView()
+    private let index: Int
+
+    init(index: Int) {
+        self.index = index
+        let num = index % 4
+        view.backgroundColor = [
+            UIColor.red,
+            UIColor.green,
+            UIColor.blue,
+            UIColor.orange
+        ][num]
+
+        let label = UILabel()
+        label.text = "第 \(index+1) 页"
+        label.textAlignment = .center
+        label.frame = CGRect(x: 0, y: 100, width: 200, height: 40)
+        view.addSubview(label)
+    }
+
+    func listView() -> UIView {
+        return view
+    }
+
+    // 生命周期（你已经接好了）
+    func listViewWillAppear() {
+        print("即将出现")
+    }
+    func listViewDidAppear() {
+        print("出现")
+    }
+    func listViewWillDisappear() {
+        print("即将消失")
+    }
+    func listViewDidDisappear() {
+        print("消失")
+    }
 }
 
