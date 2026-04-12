@@ -15,8 +15,8 @@ class DLTCategoryTitleView: UIView {
     var selectedTitleColor = DLTThemeManager.shareManager.DLT_333333_FFFFFF
     var containerView: DLTCategoryContainerView? {
         didSet {
-            containerView?.containerDelegate = self
-            containerView?.scrollTo(index: selectedIndex, animated: true)
+            containerView?.delegate = self
+            containerView?.scrollTo(index: selectedIndex, animated: false)
         }
     }
     //点击后给外部响应
@@ -30,7 +30,7 @@ class DLTCategoryTitleView: UIView {
             }else{
                 selectedIndex = adjustSelectedIndexIfNeeded(defaultSelectedIndex)
             }
-            containerView?.scrollTo(index: selectedIndex, animated: true)
+            containerView?.scrollTo(index: selectedIndex, animated: false)
         }
     }
     //默认标题
@@ -38,7 +38,7 @@ class DLTCategoryTitleView: UIView {
         didSet {
             collectionView.reloadData()
             selectedIndex = adjustSelectedIndexIfNeeded(selectedIndex)
-            containerView?.scrollTo(index: selectedIndex, animated: true)
+            containerView?.scrollTo(index: selectedIndex, animated: false)
             setNeedsLayout()
         }
     }
@@ -114,25 +114,29 @@ extension DLTCategoryTitleView: UICollectionViewDelegate, UICollectionViewDataSo
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: DLTCategoryTitleCell.self), for: indexPath) as! DLTCategoryTitleCell
-        if selectedIndex == indexPath.item {
-            cell.reload(title: titles[indexPath.item], font: selectedTitleFont ?? .systemFont(ofSize: 18), color: selectedTitleColor)
-        }else{
-            cell.reload(title: titles[indexPath.item], font: titleFont ?? .systemFont(ofSize: 16), color: titleColor)
-        }
+        cell.titleFont = titleFont!
+        cell.titleColor = titleColor
+        cell.selectedTitleFont = selectedTitleFont!
+        cell.selectedTitleColor = selectedTitleColor
+        cell.title = titles[indexPath.item]
+        cell.selectedState = selectedIndex == indexPath.item
         return cell
     }
     
     // MARK: -UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let num = abs(indexPath.item - selectedIndex)
         selectedIndex = indexPath.item
-        containerView?.scrollTo(index: selectedIndex, animated: true)
+        //跨页的话，animated变成false
+        containerView?.scrollTo(index: selectedIndex, animated: num == 1)
         onSelect?(indexPath.item)
     }
     
     // MARK: -UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        //按最大字体去计算宽度，防止切换后宽度的突然变化
         let title: String = titles[indexPath.item]
-        let font = selectedIndex == indexPath.item ? (selectedTitleFont ?? .systemFont(ofSize: 18)) : (titleFont ?? .systemFont(ofSize: 16))
+        let font = selectedTitleFont ?? .systemFont(ofSize: 18)
         let width = title.size(withAttributes: [.font: font]).width
         return CGSize(width: width + 12, height: bounds.height)
     }
@@ -140,7 +144,21 @@ extension DLTCategoryTitleView: UICollectionViewDelegate, UICollectionViewDataSo
 
 extension DLTCategoryTitleView: DLTCategoryContainerViewDelegate {
     func containerViewDidScroll(_ containerView: DLTCategoryContainerView, percent: CGFloat) {
+        guard titles.count > 0 else { return }
+        let leftIndex = Int(floor(percent))
+        let rightIndex = leftIndex + 1
+        guard leftIndex >= 0, rightIndex < titles.count else { return }
+        let progress = percent - CGFloat(leftIndex)
+        let leftIndexPath = IndexPath(item: leftIndex, section: 0)
+        let rightIndexPath = IndexPath(item: rightIndex, section: 0)
         
+        guard let leftCell = collectionView.cellForItem(at: leftIndexPath) as? DLTCategoryTitleCell,
+              let rightCell = collectionView.cellForItem(at: rightIndexPath) as? DLTCategoryTitleCell else {
+            return
+        }
+        // 渐变
+        leftCell.setProgress(1 - progress)
+        rightCell.setProgress(progress)
     }
     
     func containerViewDidChangeIndex(_ containerView: DLTCategoryContainerView, index: Int) {

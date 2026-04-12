@@ -10,8 +10,8 @@ import UIKit
 class DLTCategoryContainerView: UIView {
     // MARK: -Public Properties
     //weak可以避免循环引用
-    weak var delegate: (any DLTCategoryContainerDelegate)?
-    weak var containerDelegate: DLTCategoryContainerViewDelegate?
+    weak var datasource: (any DLTCategoryContainerDataSource)?
+    weak var delegate: DLTCategoryContainerViewDelegate?
     
     // MARK: -Public Methods
     func scrollTo(index: Int, animated: Bool) {
@@ -49,7 +49,7 @@ class DLTCategoryContainerView: UIView {
         if frameIsZero || sizeChanged {
             scrollView.frame = bounds
             containerVC.view.frame = bounds
-            let count = delegate?.numberOfListsInlistContainerView() ?? 0
+            let count = datasource?.numberOfListsInlistContainerView() ?? 0
             let width = scrollView.bounds.width
             let height = scrollView.bounds.height
             scrollView.contentSize = CGSize(width: CGFloat(count) * width, height: height)
@@ -122,21 +122,21 @@ class DLTCategoryContainerView: UIView {
     
     //修正SelectedIndex
     private func adjustSelectedIndexIfNeeded(_ index: Int) -> Int {
-        guard let delegate = delegate else {return 0}
-        let num = delegate.numberOfListsInlistContainerView()
+        guard let datasource = datasource else {return 0}
+        let num = datasource.numberOfListsInlistContainerView()
         guard num > 0 else {return 0}
         return max(0, min(index, num - 1))
     }
     
     private func list(at index: Int) -> DLTCategoryListContentDelegate? {
-        guard let delegate = delegate else { return nil }
-        let num = delegate.numberOfListsInlistContainerView()
+        guard let datasource = datasource else { return nil }
+        let num = datasource.numberOfListsInlistContainerView()
         guard index >= 0 && index < num else {return nil}
         if let list = validListDict[index] {
             return list
         }
         
-        let list = delegate.listContainerViewInitListForIndex(index: index)
+        let list = datasource.listContainerViewInitListForIndex(index: index)
         validListDict[index] = list
         // 加到 scrollView
         let view = list.listView()
@@ -193,24 +193,25 @@ extension DLTCategoryContainerView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView.bounds.width > 0 else { return }
         let percent = scrollView.contentOffset.x / scrollView.bounds.width
-        containerDelegate?.containerViewDidScroll(self, percent: percent)
+        delegate?.containerViewDidScroll(self, percent: percent)
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         //生命周期通知
         handlePageChange()
         // 通知DLTCategoryTitleView index 变了
-        containerDelegate?.containerViewDidChangeIndex(self, index: currentIndex)
+        delegate?.containerViewDidChangeIndex(self, index: currentIndex)
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         //生命周期通知
         handlePageChange()
         // 通知DLTCategoryTitleView index 变了
-        containerDelegate?.containerViewDidChangeIndex(self, index: currentIndex)
+        delegate?.containerViewDidChangeIndex(self, index: currentIndex)
     }
 
     private func handlePageChange() {
+        guard scrollView.bounds.width > 0 else { return }
         let index = Int(round(scrollView.contentOffset.x / scrollView.bounds.width))
         guard index != currentIndex else { return }
         loadList(at: index)

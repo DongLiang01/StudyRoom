@@ -8,11 +8,42 @@
 import UIKit
 
 class DLTCategoryTitleCell: UICollectionViewCell {
+    // MARK: -Public Properties
+    var titleFont = UIFont.systemFont(ofSize: 16) {
+        didSet {
+            titleLabel.font = titleFont
+        }
+    }
+    var selectedTitleFont = UIFont.systemFont(ofSize: 18)
+    var titleColor: UIColor?
+    var selectedTitleColor: UIColor?
+    var title: String = "--" {
+        didSet {
+            titleLabel.text = title
+        }
+    }
+    var selectedState: Bool = false {
+        didSet {
+            //这里设置titleLabel.transform而不直接设置font，是为了优化滑动结束后的突然字体变化
+            if selectedState {
+                let maxScale = selectedTitleFont.pointSize / titleFont.pointSize
+                titleLabel.transform = CGAffineTransform(scaleX: maxScale, y: maxScale)
+                titleLabel.textColor = selectedTitleColor
+            }else{
+                titleLabel.transform = CGAffineTransform(scaleX: 1, y: 1)
+                titleLabel.textColor = titleColor
+            }
+        }
+    }
+    
+    
     // MARK: -Public Methods
-    func reload(title: String, font: UIFont, color: UIColor?) {
-        titleLabel.text = title
-        titleLabel.font = font
-        titleLabel.textColor = color
+    func setProgress(_ progress: CGFloat) {
+        // progress: 0 ~ 1
+        titleLabel.textColor = blendColor(from: titleColor!, to: selectedTitleColor!, progress: progress)
+        let maxScale = selectedTitleFont.pointSize / titleFont.pointSize
+        let scale = 1 + (maxScale - 1) * progress
+        titleLabel.transform = CGAffineTransform(scaleX: scale, y: scale)
     }
     
     // MARK: -override

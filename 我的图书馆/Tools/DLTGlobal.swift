@@ -40,5 +40,18 @@ var kStatusBarHeight: CGFloat {
     }
 }
 
+func blendColor(from: UIColor, to: UIColor, progress: CGFloat) -> UIColor {
+    var fR: CGFloat = 0, fG: CGFloat = 0, fB: CGFloat = 0, fA: CGFloat = 0
+    var tR: CGFloat = 0, tG: CGFloat = 0, tB: CGFloat = 0, tA: CGFloat = 0
+    from.getRed(&fR, green: &fG, blue: &fB, alpha: &fA)
+    to.getRed(&tR, green: &tG, blue: &tB, alpha: &tA)
+    return UIColor(
+        red: fR + (tR - fR) * progress,
+        green: fG + (tG - fG) * progress,
+        blue: fB + (tB - fB) * progress,
+        alpha: fA + (tA - fA) * progress
+    )
+}
+
 
 

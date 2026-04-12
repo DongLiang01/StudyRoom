@@ -38,12 +38,12 @@ extension DLTCategoryListContentDelegate {
     }
 }
 
-protocol DLTCategoryContainerDelegate: NSObjectProtocol {
+protocol DLTCategoryContainerDataSource: NSObjectProtocol {
     func numberOfListsInlistContainerView() -> Int
     func listContainerViewInitListForIndex(index: Int) -> any DLTCategoryListContentDelegate
 }
 
-protocol DLTCategoryContainerViewDelegate: AnyObject {
+protocol DLTCategoryContainerViewDelegate: NSObjectProtocol {
     func containerViewDidScroll(_ containerView: DLTCategoryContainerView, percent: CGFloat)
     func containerViewDidChangeIndex(_ containerView: DLTCategoryContainerView, index: Int)
 }

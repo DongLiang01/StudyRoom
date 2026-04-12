@@ -86,13 +86,13 @@ class DLTHomeViewController: DLTBaseViewController {
     
     lazy var containerView: DLTCategoryContainerView = {
         let view = DLTCategoryContainerView()
-        view.delegate = self
+        view.datasource = self
         return view
     }()
     
 }
 
-extension DLTHomeViewController: DLTCategoryContainerDelegate {
+extension DLTHomeViewController: DLTCategoryContainerDataSource {
     func numberOfListsInlistContainerView() -> Int {
         return titles.count
     }
