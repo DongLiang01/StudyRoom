@@ -8,90 +8,114 @@
 import UIKit
 
 class DLTSideMenuCell: UITableViewCell {
-    var dragAction: ((UILongPressGestureRecognizer) -> Void)?
+    var categorySelectAction: (() -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
-        addSubUI()
+        setupUI()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    private func addSubUI() {
-        self.contentView.backgroundColor = DLTThemeManager.shareManager.bgColor
-        self.contentView.addSubview(self.nameTF)
-        self.contentView.addSubview(self.dragImgView)
-        self.contentView.addSubview(self.bottomLine)
-        nameTF.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20)
-            make.centerY.equalToSuperview()
-            make.trailing.equalTo(dragImgView.snp.leading).offset(-20)
-        }
-        dragImgView.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-20)
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(20)
-        }
-        bottomLine.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview()
-            make.height.equalTo(1)
-        }
-    }
-    
-    // MARK: -action
-    func refreshData(_ editState: Bool, _ columnName: String) {
-        dragImgView.isHidden = !editState
-        nameTF.isEnabled = editState
-        nameTF.text = columnName
-        if editState {
-            nameTF.layer.borderWidth = 1
-            nameTF.backgroundColor = DLTThemeManager.shareManager.DLT_F7F8FA_20242C
-        }else{
-            nameTF.layer.borderWidth = 0
-            nameTF.backgroundColor = DLTThemeManager.shareManager.bgColor
-        }
-    }
-    
-    @objc private func longPressToDrag(sender: UILongPressGestureRecognizer) {
-        dragAction?(sender)
-    }
-    
-    // MARK: -getter
-    private lazy var nameTF: DLTTextField = {
-        let tf = DLTTextField()
-        tf.textColor = DLTThemeManager.shareManager.DLT_333333_FFFFFF
-        tf.font = UIFont(name: FontPingFangRe, size: 16)
-        tf.text = "你好"
-        tf.delegate = self
-        tf.isEnabled = false
-        tf.padding = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
-        tf.layer.cornerRadius = 4
-        tf.layer.borderColor = DLTThemeManager.shareManager.DLT_F7F8FA_20242C?.cgColor
-        return tf
-    }()
-    
-    private lazy var dragImgView: UIImageView = {
-        let imgView = UIImageView(image: UIImage(named: "dlt_icon_drag"))
-        imgView.isHidden = true
-        imgView.isUserInteractionEnabled = true
-        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(longPressToDrag(sender:)))
-        imgView.addGestureRecognizer(longPress)
-        return imgView
-    }()
-    
-    private lazy var bottomLine: UIView = {
-        let line = UIView()
-        line.backgroundColor = DLTThemeManager.shareManager.DLT_F7F8FA_20242C
-        return line
-    }()
-}
 
-extension DLTSideMenuCell: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
+    private func setupUI() {
+        contentView.backgroundColor = DLTThemeManager.shareManager.bgColor
+        contentView.addSubview(containerView)
+        containerView.addSubview(iconContainerView)
+        iconContainerView.addSubview(iconLabel)
+        containerView.addSubview(titleLabel)
+        containerView.addSubview(subTitleLabel)
+        containerView.addSubview(countLabel)
+
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 6, left: 20, bottom: 6, right: 20))
+        }
+        iconContainerView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(44)
+        }
+        iconLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        titleLabel.snp.makeConstraints { make in
+            make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+            make.bottom.equalTo(containerView.snp.centerY).inset(2)
+        }
+        subTitleLabel.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
+            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.trailing.equalTo(titleLabel)
+        }
+        countLabel.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-16)
+            make.centerY.equalToSuperview()
+        }
     }
+
+    func configure(with category: DLTSideMenuCategory, isSelected: Bool = false) {
+        titleLabel.text = category.name
+        subTitleLabel.text = category.subTitle
+        countLabel.text = "\(category.bookCount)"
+        iconLabel.text = String(category.name.prefix(1))
+        iconContainerView.backgroundColor = category.iconColor
+
+        let theme = DLTThemeManager.shareManager
+        if isSelected {
+            containerView.backgroundColor = UIColor.hex("#EFF6FF")
+            containerView.layer.borderWidth = 1
+            containerView.layer.borderColor = UIColor.hex("#DBEAFE")?.cgColor
+            countLabel.textColor = theme.DLT_2563EB_2563EB
+        } else {
+            containerView.backgroundColor = theme.DLT_F5F7FB_1A1B21
+            containerView.layer.borderWidth = 1
+            containerView.layer.borderColor = theme.DLT_E5E7EB_3A3C44?.cgColor
+            countLabel.textColor = theme.DLT_6B7280_9CA3AF
+        }
+
+        titleLabel.textColor = theme.DLT_111827_FFFFFF
+        subTitleLabel.textColor = theme.DLT_6B7280_9CA3AF
+    }
+
+    private lazy var containerView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 22
+        view.clipsToBounds = true
+        return view
+    }()
+
+    private lazy var iconContainerView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 14
+        view.clipsToBounds = true
+        return view
+    }()
+
+    private lazy var iconLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: FontPingFangBold, size: 18)
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: FontPingFangMe, size: 16)
+        return label
+    }()
+
+    private lazy var subTitleLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: FontPingFangRe, size: 13)
+        return label
+    }()
+
+    private lazy var countLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: FontPingFangMe, size: 14)
+        return label
+    }()
 }
